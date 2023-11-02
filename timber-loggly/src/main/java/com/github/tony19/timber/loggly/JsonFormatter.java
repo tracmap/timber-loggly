@@ -19,6 +19,9 @@ import android.util.Log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +31,8 @@ import java.util.Map;
 class JsonFormatter implements IFormatter {
 
     private Map<Integer, String> LEVELS;
+
+    private DateFormat df;
 
     /**
      * Constructs a formatter that creates a JSON object from log-event data
@@ -40,6 +45,8 @@ class JsonFormatter implements IFormatter {
         LEVELS.put(Log.WARN, "WARN");
         LEVELS.put(Log.ERROR, "ERROR");
         LEVELS.put(Log.ASSERT, "ASSERT");
+
+        df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     }
 
     /**
@@ -54,6 +61,8 @@ class JsonFormatter implements IFormatter {
     public String format(int priority, String tag, String message, Throwable t) {
         StringBuilder formatted = new StringBuilder();
         formatted.append("{");
+        String nowAsISO = df.format(new Date());
+        formatted.append("\"timestamp\": \"").append(nowAsISO).append("\",");
         formatted.append("\"level\": \"").append(toLevel(priority)).append("\"");
         appendMessage(formatted, message);
         appendThrowable(formatted, t);
@@ -75,8 +84,8 @@ class JsonFormatter implements IFormatter {
                 buffer.append(", ");
             }
             buffer.append("\"exception\": \"")
-                  .append(escape(errors.toString()))
-                  .append("\"");
+                    .append(escape(errors.toString()))
+                    .append("\"");
         }
     }
 
@@ -91,8 +100,8 @@ class JsonFormatter implements IFormatter {
                 buffer.append(", ");
             }
             buffer.append("\"message\": \"")
-                  .append(escape(message))
-                  .append("\"");
+                    .append(escape(message))
+                    .append("\"");
         }
     }
 
@@ -103,9 +112,9 @@ class JsonFormatter implements IFormatter {
      */
     static private String escape(String input) {
         return input.replace("\r", "\\\\r")
-                    .replace("\n", "\\\\n")
-                    .replace("\t", "\\\\t")
-                    .replace("\"", "\\\"");
+                .replace("\n", "\\\\n")
+                .replace("\t", "\\\\t")
+                .replace("\"", "\\\"");
     }
 
     /**
